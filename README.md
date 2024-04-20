@@ -5,5 +5,5 @@
 * 7z (set path in config.json)
 
 ## Usage:
-`npm install`
-`node .`
+* `npm install`
+* `node .`
