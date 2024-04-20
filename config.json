@@ -1,8 +1,9 @@
 {
-    "excludeBSIPA": true,
+    "excludeBSIPA": false,
     "includeModDescriptions": true,
     "initials": true,
     "7zPath": "7z",
+    "keepZippedMods": true,
     "zippedModsPath": "Zipped mods",
     "modStatus": "approved"
 }

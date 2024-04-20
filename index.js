@@ -24,7 +24,7 @@ const initialPrompts = fs.existsSync("./.initialprompts.json") ? require("./.ini
     // Ask for new installation path and version
     const installPath = await prompt("Enter the path to your new Beat Saber directory", "installPath", "You must enter the path to your new Beat Saber directory!");
     if (!installPath) return;
-    const version = await prompt("Enter the version of your current Beat Saber install", null, "You must enter the version of your current Beat Saber install!");
+    const version = await prompt("Enter the version of your current Beat Saber install", null, "You must enter the version of your current Beat Saber install!", "text", { initial: fs.existsSync(path.join(installPath, "BeatSaberVersion.txt")) ? fs.readFileSync(path.join(installPath, "BeatSaberVersion.txt"), "utf-8").split("_")[0] : undefined });
     if (!version) return;
 
     // Get mods of that version
@@ -71,13 +71,19 @@ const initialPrompts = fs.existsSync("./.initialprompts.json") ? require("./.ini
         const modUrl = mod.downloads[0].url;
         const modSavePath = path.join(config.zippedModsPath, path.basename(modUrl));
 
-        await downloadMod(modUrl, modSavePath).catch(err => { return console.log(`Failed to download mod ${mod.name}!`) });
+        try {
+            await downloadMod(modUrl, modSavePath)
+        } catch (err) {
+            console.log(`Failed to download mod ${mod.name}!`);
+            if (selectedMods[index + 1]) downloadMods(index + 1);
+            return;
+        }
 
         // Extract
         console.log(`Extracting mod ${mod.name}`);
         cp.exec(`${config["7zPath"]} x "${modSavePath}" -o"${path.normalize(installPath)}" -y`, err => {
             if (err) console.log(`Failed to extract mod ${mod.name}!`);
-            fs.rmSync(modSavePath);
+            if (!config.keepZippedMods) fs.rmSync(modSavePath);
             if (selectedMods[index + 1]) return downloadMods(index + 1);
         });
     })(0);
@@ -151,7 +157,7 @@ function downloadMod(url, savePath) {
 
         https.request({
             host: "beatmods.com",
-            path: url
+            path: url.replace(/ /g, "%20")
         }, res => {
             if (res.statusCode != 200) reject(res);
 
