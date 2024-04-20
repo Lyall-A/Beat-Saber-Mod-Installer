@@ -34,7 +34,7 @@ const initialPrompts = fs.existsSync("./.initialprompts.json") ? require("./.ini
     
     // Ask to select mods with found old mods being pre-selected (if any)
     const selectedMods = await prompt("Select mods to install", null, null, "multiselect", { choices: newMods.map(i => ({
-        title: i.name,
+        title: `${i.name}${config.includeModDescriptions ? ` - ${i.description}` : ""}`,
         value: i,
         selected: oldMods ? (matchMods(oldMods, i.name) ? true : false) : false
     })) });
@@ -50,6 +50,11 @@ const initialPrompts = fs.existsSync("./.initialprompts.json") ? require("./.ini
             }
         });
     });
+
+    if (config.excludeBSIPA) {
+        const bsipaIndex = selectedMods.findIndex(i => i.name == "BSIPA");
+        if (bsipaIndex != -1) selectedMods.splice(bsipaIndex, 1);
+    }
 
     // Ask for confirmation
     const confirmation = await prompt(`Ready to install ${selectedMods.length} mods (${additionalDependencies} additional dependencies)?`, null, null, "confirm");
